@@ -1,8 +1,9 @@
-﻿/*
+/*
 Instant-runoff voting with Google Form and Google Apps Script
 Author: Chris Cartland
 Date created: 2012-04-29
 Last code update: 2012-10-16
+Edited by Jonah Eaton to handle a ballot with multiple elections
 
 
 Read usage instructions online
@@ -31,16 +32,18 @@ Steps to run an election.
 /* Settings */ 
 
 
-var VOTE_SHEET_NAME = "Votes";
+/*var VOTE_SHEET_NAME = "Q1";*/
 var BASE_ROW = 2;
-var BASE_COLUMN = 3;
+var BASE_COLUMN = 6;
+var MAX_ROW = 10;
 
-
-var USING_KEYS = true;
+var USING_KEYS = false;
 var VOTE_SHEET_KEYS_COLUMN = 2;
 var KEYS_SHEET_NAME = "Keys";
 var USED_KEYS_SHEET_NAME = "Used Keys";
 
+var CHANGE_COLORS = false;
+var RUN_RUNOFF = false;
 
 /* End Settings */
 
@@ -59,8 +62,12 @@ var missing_keys_used_sheet_alert = false;
 /* End notification state */
 
 
-/* Creates new sheets if they do not exist. */
 function setup_instant_runoff() {
+  create_menu_items();
+}
+
+/* Creates new sheets if they do not exist. */
+/*function setup_instant_runoff(VOTE_SHEET_NAME) {
   var active_spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   active_spreadsheet.getSheets()[0].setName(VOTE_SHEET_NAME);
   
@@ -80,17 +87,18 @@ function setup_instant_runoff() {
       for (var k = 0; k < keys_used_range.getNumRows(); k++) {
         var cell = keys_used_range.getCell(k+1, 1);
         cell.setValue("");
-        cell.setBackground('#ffffff');
+        //cell.setBackground('#ffffff');
       }
     }
   }
   create_menu_items();
 }
+*/
 
 function create_menu_items() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var menuEntries = [ {name: "Setup", functionName: "setup_instant_runoff"},
-                        {name: "Run", functionName: "run_instant_runoff"} ];
+                        {name: "Run", functionName: "run_all_elections"} ];
     ss.addMenu("Instant Runoff", menuEntries);
 }
 
@@ -104,7 +112,45 @@ function onInstall() {
     onOpen();
 }
 
-function run_instant_runoff() {
+
+function get_election_message(VOTE_SHEET_NAME) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss.getSheetByName(VOTE_SHEET_NAME) == null) {
+    var full_message = VOTE_SHEET_NAME + " not found"}
+  else{
+  var myout = run_instant_runoff(VOTE_SHEET_NAME,"");
+var winner1 = myout.winner;
+var outcome = myout.outcome;
+    if (RUN_RUNOFF){
+    if (outcome>0){
+    var myout1 = run_instant_runoff(VOTE_SHEET_NAME,winner1);
+    var runnerup1 = myout1.winner;}
+  else{  var runnerup1 = "N/A"
+      }
+  var full_message = "Winner: " + winner1 + "\\n Runnerup: " + runnerup1;
+    } else {
+      var full_message = "Winner: " + winner1 ;
+    }
+  }
+  return full_message
+}
+
+
+function run_all_elections() {
+ 
+   var full_message = get_election_message("Chair");
+  full_message = full_message + "\\n" + get_election_message("Operations");
+  full_message = full_message + "\\n" + get_election_message("Treasurer");
+  full_message = full_message + "\\n" + get_election_message("Liaison");
+  full_message = full_message + "\\n" + get_election_message("CSMR");
+  full_message = full_message + "\\n" + get_election_message("CQP");
+  full_message = full_message + "\\n" + get_election_message("CCPP");
+  full_message = full_message + ".\\n Date and time: " +  Utilities.formatDate(new Date(), "PST", "yyyy-MM-dd HH:mm:ss");
+Browser.msgBox(full_message);
+
+}
+
+function run_instant_runoff(VOTE_SHEET_NAME,bad_candidate) {
   /* Determine number of voting columns */
   var active_spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var row1_range = active_spreadsheet.getSheetByName(VOTE_SHEET_NAME).getRange("A1:1");
@@ -115,7 +161,7 @@ function run_instant_runoff() {
   missing_keys_used_sheet_alert = false;
   
   /* Begin */
-  clear_background_color();
+  clear_background_color(VOTE_SHEET_NAME);
   
   var results_range = get_range_with_values(VOTE_SHEET_NAME, BASE_ROW, BASE_COLUMN, NUM_COLUMNS);
   
@@ -154,6 +200,9 @@ function run_instant_runoff() {
   
   /* candidates is a list of names (strings) */
   var candidates = get_all_candidates(results_range);
+  //var badcandidate = candidates[5];
+  remove_candidate(candidates,"#NUM!");
+  remove_candidate(candidates,bad_candidate);
   
   /* votes is an object mapping candidate names -> number of votes */
   var votes = get_votes(results_range, candidates, keys_range, valid_keys);
@@ -161,16 +210,21 @@ function run_instant_runoff() {
   /* winner is candidate name (string) or null */
   var winner = get_winner(votes, candidates);
 
-
   while (winner == null) {
     /* Modify candidates to only include remaining candidates */
+    var prev_candidates =  copy_candidates(candidates);
     get_remaining_candidates(votes, candidates);
+    //Browser.msgBox(prev_candidates);
     if (candidates.length == 0) {
       if (missing_keys_used_sheet_alert) {
         Browser.msgBox("Unable to record keys used. Looking for sheet: " + USED_KEYS_SHEET_NAME);    
       }
-      Browser.msgBox("Tie");
-      return;
+      //Browser.msgBox("Tie");
+      //return;
+      return  {
+        winner: prev_candidates,
+        outcome: 0,
+    };
     }
     votes = get_votes(results_range, candidates, keys_range, valid_keys);
     winner = get_winner(votes, candidates);
@@ -184,7 +238,12 @@ function run_instant_runoff() {
     used_keys_range.setValue(winner_message);
   }
   var winner_message = "Winner: " + winner + ".\nDate and time: " +  Utilities.formatDate(new Date(), "PST", "yyyy-MM-dd HH:mm:ss");
-  Browser.msgBox(winner_message);
+        return  {
+        winner: winner,
+        outcome: 1,
+    };
+  /*return winner_message;
+  Browser.msgBox(winner_message);*/
 }
 
 
@@ -211,7 +270,9 @@ function get_range_with_values(sheet_string, base_row, base_column, num_columns)
 
 
 function range_to_array(results_range) {
-  results_range.setBackground("#eeeeee");
+        if (CHANGE_COLORS){
+        results_range.setBackground("#eeeeee");
+      }
   
   var candidates = [];
   var num_rows = results_range.getNumRows();
@@ -227,7 +288,9 @@ function range_to_array(results_range) {
         break;
       }
       var cell_value = cell.getValue();
-      cell.setBackground("#ffff00");
+      if (CHANGE_COLORS){
+        cell.setBackground("#ffff00");
+      }
       if (!include(candidates, cell_value)) {
         candidates.push(cell_value);
       }
@@ -236,9 +299,19 @@ function range_to_array(results_range) {
   return candidates;
 }
 
+function copy_candidates(candidates){
+var prev_candidates = [];
+for (var c = 0; c < candidates.length; c++) {
+    var name = candidates[c];
+   prev_candidates.push(name);
+}
+  return prev_candidates
+}
 
 function get_all_candidates(results_range) {
-  results_range.setBackground("#eeeeee");
+  if (CHANGE_COLORS){
+    results_range.setBackground("#eeeeee");
+  }
   
   var candidates = [];
   var num_rows = results_range.getNumRows();
@@ -254,7 +327,9 @@ function get_all_candidates(results_range) {
         break;
       }
       var cell_value = cell.getValue();
-      cell.setBackground("#ffff00");
+      if (CHANGE_COLORS){
+        cell.setBackground("#ffff00");
+      }
       if (!include(candidates, cell_value)) {
         candidates.push(cell_value);
       }
@@ -289,10 +364,12 @@ function get_votes(results_range, candidates, keys_range, valid_keys) {
       var key_cell_value = key_cell.getValue();
       if (!include(valid_keys, key_cell_value) ||
           include(keys_used, key_cell_value)) {
-        key_cell.setBackground('#ffaaaa');
+        if (CHANGE_COLORS){
+          key_cell.setBackground('#ffaaaa');}
         continue;
       } else {
-        key_cell.setBackground('#aaffaa');
+        if (CHANGE_COLORS){
+          key_cell.setBackground('#aaffaa');}
         keys_used.push(key_cell_value);
       }
     }
@@ -306,10 +383,12 @@ function get_votes(results_range, candidates, keys_range, valid_keys) {
       var cell_value = cell.getValue();
       if (include(candidates, cell_value)) {
         votes[cell_value] += 1;
-        cell.setBackground("#aaffaa");
+        if (CHANGE_COLORS){
+          cell.setBackground("#aaffaa");}
         break;
       }
-      cell.setBackground("#aaaaaa");
+      if (CHANGE_COLORS){
+        cell.setBackground("#aaaaaa");}
     }
   }
   if (keys_range != null) {
@@ -322,7 +401,8 @@ function get_votes(results_range, candidates, keys_range, valid_keys) {
 function update_keys_used(keys_used) {
   var keys_used_range = get_range_with_values(USED_KEYS_SHEET_NAME, BASE_ROW, 1, 1);
   if (keys_used_range != null) {
-    keys_used_range.setBackground('#ffffff');
+    if (CHANGE_COLORS){
+      keys_used_range.setBackground('#ffffff');}
     if (keys_used_range != null) {
       var num_rows = keys_used_range.getNumRows();
       for (var row = num_rows; row >= 1; row--) {
@@ -343,7 +423,8 @@ function update_keys_used(keys_used) {
   for (var k = 0; k < keys_used.length; k++) {
     var cell = keys_used_range.getCell(k+1, 1);
     cell.setValue(keys_used[k]);
-    cell.setBackground('#eeeeee');
+    if (CHANGE_COLORS){
+      cell.setBackground('#eeeeee');}
   }
 }
 
@@ -355,6 +436,7 @@ function get_winner(votes, candidates) {
   var winning = null;
   var max = 0;
   for (var c = 0; c < candidates.length; c++) {
+    //Browser.msgBox("length " + c)
     var name = candidates[c];
     var count = votes[name];
     total += count;
@@ -393,7 +475,20 @@ function get_remaining_candidates(votes, candidates) {
   }
   return candidates;
 }
-  
+
+function remove_candidate(candidates,badcandidate) {
+   var c = 0;
+  while (c < candidates.length) {
+    var name = candidates[c];
+    if (name == badcandidate) {
+      candidates.splice(c, 1);
+    } else {
+      c++;
+    }
+  }
+  return candidates
+}
+
 /*
 http://stackoverflow.com/questions/143847/best-way-to-find-an-item-in-a-javascript-array
 */
@@ -416,6 +511,8 @@ function get_num_rows_with_values(results_range) {
     }
     num_rows_with_votes += 1;
   }
+  num_rows_with_votes = Math.min(num_rows_with_votes,MAX_ROW);
+  //Browser.msgBox(num_rows_with_votes)
   return num_rows_with_votes;
 }
 
@@ -438,15 +535,22 @@ function get_num_columns_with_values(results_range) {
 }
 
 
-function clear_background_color() {
+function clear_background_color(VOTE_SHEET_NAME) {
   var results_range = get_range_with_values(VOTE_SHEET_NAME, BASE_ROW, BASE_COLUMN, NUM_COLUMNS);
   if (results_range == null) {
     return;
   }
-  results_range.setBackground('#eeeeee');
+  if (CHANGE_COLORS){
+    results_range.setBackground('#eeeeee');
+  }
   
   if (USING_KEYS) {
     var keys_range = get_range_with_values(VOTE_SHEET_NAME, BASE_ROW, VOTE_SHEET_KEYS_COLUMN, 1);
-    keys_range.setBackground('#eeeeee');
+    if (CHANGE_COLORS){
+      //keys_range.setBackground('#eeeeee');
+    }
   }
 }
+
+
+
