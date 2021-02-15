@@ -33,13 +33,13 @@ _Notes about algorithm_
 
 ![Example Spreadsheet Screenshot](ExampleSpreadsheet.png)
 
-![Example Form Screenshot](Example Google Form Question.png)
+![Example Form Screenshot](ExampleGoogleFormQuestion.png)
 
 # Steps to run an election
 
 Steps to run an election.
 * Go to Google Drive. Create a new Google Form.
-* Create questions according to instructions on GitHub -- https://github.com/cartland/instant-runoff
+* Create questions according to instructions on GitHub -- https://github.com/jonaheaton/multipart-instant-runoff
 * From the form spreadsheet go to "Tools" -> "Script Editor..."
 * Copy the code from instant-runoff.gs into the editor.
 * Configure settings in the editor and match the settings with the names of your sheets.
