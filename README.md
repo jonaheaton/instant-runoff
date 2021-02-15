@@ -62,8 +62,10 @@ Steps to run an election.
     * If this is not an option, run the function setup_instant_runoff() directly from the Script Editor.
 * Create keys in the sheet named "Keys".
 * Send out the live form for voting. If you are using keys, don't forget to distribute unique secret keys to voters.
+* From the form spreadsheet go to "Instant Runoff" -> "Initialize".
+    * If this is not an option, run the function set_up_sheet() directly from the Script Editor.
 * From the form spreadsheet go to "Instant Runoff" -> "Run".
-    * If this is not an option, run the function run_instant_runoff() directly from the Script Editor.
+    * If this is not an option, run the function run_all_elections() directly from the Script Editor.
 
 # How to administer example election
 
