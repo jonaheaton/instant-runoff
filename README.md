@@ -32,15 +32,19 @@ _Notes about algorithm_
 * [Example Form](https://forms.gle/ReTizBmeJ8ngrGpK8)
 
 **Example Google Question Format** 
+
 ![Example Form Screenshot](ExampleGoogleFormQuestion.png?raw=true "Example Google Question Format")
 
 **Example of Initial Response Spreadsheet**
+
 ![Example Initial Spreadsheet Screenshot](ExampleResponseSpreadSheet.png?raw=true "Initial Response Sheet")
 
 **Example of Response Spreadsheet after Initilization**
+
 ![Example Spreadsheet after Initilization Screenshot](ExampleFormattedSpreadSheet.png?raw=true "Formatted Response Sheet")
 
 **Example of Election Result**
+
 ![Example Spreadsheet with Election Result Screenshot](ExampleElectionResult.png?raw=true "Election Result")
 
 # Steps to run an election
@@ -51,6 +55,9 @@ Steps to run an election.
 * From the form spreadsheet go to "Tools" -> "Script Editor..."
 * Copy the code from instant-runoff.gs into the editor.
 * Configure settings in the editor and match the settings with the names of your sheets.
+* Important: set the "PositionsList" variable to be a list of the titles that are being voted on. In the example that would be 
+            
+            var PositionList = ["Best Animal?","Best Ice Cream?","Best Cookie?"];
 * From the form spreadsheet go to "Instant Runoff" -> "Setup".
     * If this is not an option, run the function setup_instant_runoff() directly from the Script Editor.
 * Create keys in the sheet named "Keys".
