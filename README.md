@@ -2,7 +2,7 @@
 
 Author: Jonah Eaton
 
-based off work done by Chris Cartland in 2012-04-29 [Instant Runoff Voting](http://github.com/cartland/instant-runoff "IRV")
+based off work done by Chris Cartland and Dave Parsons in 2012 [Instant Runoff Voting](http://github.com/cartland/instant-runoff "IRV")
 
 Updated to allow for multiple, mutli-stage instant-runoff questions that work with more user-friendly google forms
 It is likely that the code for using keys in Chris Cartland's original code has been broken by my changes.  
