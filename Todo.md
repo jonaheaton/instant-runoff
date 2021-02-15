@@ -1,5 +1,6 @@
 To do list
 
+* update "Settings" in the readme file
 * the color coding option is very slow
 * eliminate unused variables, and use general clean up
   * better documentation within sript
