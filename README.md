@@ -33,7 +33,7 @@ _Notes about algorithm_
 
 ![Example Spreadsheet Screenshot](ExampleSpreadsheet.png)
 
-![Example Form Screenshot](ExampleGoogleFormQuestion.png)
+![Example Form Screenshot](Example Google Form Question.png)
 
 # Steps to run an election
 
