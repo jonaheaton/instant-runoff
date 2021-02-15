@@ -1,13 +1,16 @@
 /*
-Instant-runoff voting with Google Form and Google Apps Script
-Author: Chris Cartland
-Date created: 2012-04-29
-Last code update: 2012-10-16
-Edited by Jonah Eaton to handle a ballot with multiple elections
+Multi-part Instant-runoff voting with Google Form and Google Apps Script
+
+Author: Jonah Eaton
+Date Updated: 2021-02-15
+
+Source Author: Chris Cartland
+Source Date created: 2012-04-29
+Edited by Jonah Eaton to handle a ballot with multiple elections, multi-part ballots and easier to use google form interface
 
 
 Read usage instructions online
-https://github.com/cartland/instant-runoff
+https://github.com/jonaheaton/multipart-instant-runoff
 
 
 This project may contain bugs. Use at your own risk.
@@ -15,7 +18,7 @@ This project may contain bugs. Use at your own risk.
 
 Steps to run an election.
 * Go to Google Drive. Create a new Google Form.
-* Create questions according to instructions on GitHub -- https://github.com/cartland/instant-runoff
+* Create questions according to instructions on GitHub -- https://github.com/jonaheaton/multipart-instant-runoff
 * From the form spreadsheet go to "Tools" -> "Script Editor..."
 * Copy the code from instant-runoff.gs into the editor.
 * Configure settings in the editor and match the settings with the names of your sheets.
@@ -30,21 +33,22 @@ Steps to run an election.
 
 
 /* Settings */ 
+var PositionList = ["Chair","Director of Operations","Treasurer","Department Liaison"];
+var RankingNames = ["1st Choice","2nd","3rd","4th","5th","6th","7th","8th"];
+var ColLetters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"];
+var MAX_NUM_VOTES = 25;
 
-
-/*var VOTE_SHEET_NAME = "Q1";*/
 var BASE_ROW = 2;
-var BASE_COLUMN = 6;
-var MAX_ROW = 10;
+//var BASE_COLUMN = 6;
+var MAX_ROW = MAX_NUM_VOTES;
 
 var USING_KEYS = false;
 var VOTE_SHEET_KEYS_COLUMN = 2;
 var KEYS_SHEET_NAME = "Keys";
 var USED_KEYS_SHEET_NAME = "Used Keys";
 
-var CHANGE_COLORS = false;
-var RUN_RUNOFF = false;
-
+var CHANGE_COLORS = true;
+var RUN_RUNOFF = true;
 /* End Settings */
 
 
@@ -54,46 +58,9 @@ var NUM_COLUMNS;
 
 /* End global variables */
 
-
-/* Notification state */
-
-var missing_keys_used_sheet_alert = false;
-
-/* End notification state */
-
-
 function setup_instant_runoff() {
   create_menu_items();
 }
-
-/* Creates new sheets if they do not exist. */
-/*function setup_instant_runoff(VOTE_SHEET_NAME) {
-  var active_spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  active_spreadsheet.getSheets()[0].setName(VOTE_SHEET_NAME);
-  
-  if (USING_KEYS) {
-    if (active_spreadsheet.getSheetByName(KEYS_SHEET_NAME) == null) {
-      active_spreadsheet.insertSheet(KEYS_SHEET_NAME);
-      active_spreadsheet.getSheetByName(KEYS_SHEET_NAME).getRange("A1").setValue(KEYS_SHEET_NAME).setFontWeight("bold");
-    }
-    if (active_spreadsheet.getSheetByName(USED_KEYS_SHEET_NAME) == null) {
-      active_spreadsheet.insertSheet(USED_KEYS_SHEET_NAME);
-      active_spreadsheet.getSheetByName(USED_KEYS_SHEET_NAME).getRange("A1").setValue(USED_KEYS_SHEET_NAME).setFontWeight("bold");
-    } else {
-      var a1string = String.fromCharCode(65 + 1 - 1) +
-          BASE_ROW + ':' + 
-          String.fromCharCode(65 + 1 + 1 - 2);
-      var keys_used_range = active_spreadsheet.getSheetByName(USED_KEYS_SHEET_NAME).getRange(a1string);
-      for (var k = 0; k < keys_used_range.getNumRows(); k++) {
-        var cell = keys_used_range.getCell(k+1, 1);
-        cell.setValue("");
-        //cell.setBackground('#ffffff');
-      }
-    }
-  }
-  create_menu_items();
-}
-*/
 
 function create_menu_items() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -112,7 +79,7 @@ function onInstall() {
     onOpen();
 }
 
-
+/*  generate the election results message */
 function get_election_message(VOTE_SHEET_NAME) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (ss.getSheetByName(VOTE_SHEET_NAME) == null) {
@@ -135,25 +102,97 @@ var outcome = myout.outcome;
   return full_message
 }
 
-
+/* run the election */
 function run_all_elections() {
- 
-   var full_message = get_election_message("Chair");
-  full_message = full_message + "\\n" + get_election_message("Operations");
-  full_message = full_message + "\\n" + get_election_message("Treasurer");
-  full_message = full_message + "\\n" + get_election_message("Liaison");
-  full_message = full_message + "\\n" + get_election_message("CSMR");
-  full_message = full_message + "\\n" + get_election_message("CQP");
-  full_message = full_message + "\\n" + get_election_message("CCPP");
+   var full_message = get_election_message(PositionList[0]);
+   for(let i = 1; i < PositionList.length; i++){
+
+  full_message = full_message + "\\n" + get_election_message(PositionList[i]);
+   }
   full_message = full_message + ".\\n Date and time: " +  Utilities.formatDate(new Date(), "PST", "yyyy-MM-dd HH:mm:ss");
 Browser.msgBox(full_message);
-
 }
+
+
+
+/* format the google sheet for an election() */
+function set_up_sheet() {
+  for(let i = 0; i < PositionList.length; i++){
+   new_sheet_for_position(PositionList[i]); 
+   format_sheet_for_election(PositionList[i]);
+   lock_sheet_for_position(PositionList[i])
+  }
+}
+
+/* create a sheet for a specific Position */
+function new_sheet_for_position(PositionName) {
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var itt = activeSpreadsheet.getSheetByName(PositionName);
+  if (!itt){
+var ssNew = activeSpreadsheet.insertSheet(PositionName);
+ssNew.appendRow(['=FILTER(Responses!B1:AC103,IF(REGEXMATCH(Responses!B1:AC1, "'+ PositionName +'"), 1, 0))']);
+}
+}
+
+/* count the number of running for a specific PositionName */
+function how_many_candidates(PositionName) {
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var Sheet = activeSpreadsheet.getSheetByName(PositionName);
+  var numCol = Sheet.getLastColumn();
+  var numCandidates = 0;
+  var data = Sheet.getSheetValues(1,1,1,numCol);
+  for(var i = 0; i<numCol;i++){
+    if(data[0][i].includes(PositionName)){
+      numCandidates = numCandidates+1;
+    }
+  }
+return numCandidates
+// Logger.log(numCandidates)
+}
+
+/* format the sheet for counting for a specific Position */
+function format_sheet_for_election(PositionName) {
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var numCandidates = how_many_candidates(PositionName);
+  var ss = activeSpreadsheet.getSheetByName(PositionName);
+  // var numCandidates = ss.getLastColumn();
+  var lastLet = ColLetters[numCandidates-1];
+  for(let i = 0; i < numCandidates; i++){
+    var cell = ss.getRange(1,i+numCandidates+1)
+    cell.setValue(RankingNames[i]);
+    var cell = ss.getRange(2,i+numCandidates+1)
+    var myLet = ColLetters[i+numCandidates];
+    // ss.getRange(2,i+numCandidates+1,20,1).setValues(outerArray);
+    cell.setValue("=INDEX($A$1:$"+ lastLet + "$1,MIN(IF($A2:$"+ lastLet +"2="+ myLet +"$1,COLUMN($A:$"+ lastLet +"),9999)))")
+    var destination = ss.getRange(2,i+numCandidates+1,MAX_NUM_VOTES,1);
+    cell.autoFill(destination, SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
+  }
+}
+
+
+/* lock the sheet associated with specific Position */
+function lock_sheet_for_position(PositionName){
+  // Protect the active sheet, then remove all other users from the list of editors.
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = activeSpreadsheet.getSheetByName(PositionName);
+  var protection = ss.protect().setDescription('Sample protected sheet');
+
+  // Ensure the current user is an editor before removing others. Otherwise, if the user's edit
+  // permission comes from a group, the script throws an exception upon removing the group.
+  var me = Session.getEffectiveUser();
+  protection.addEditor(me);
+  protection.removeEditors(protection.getEditors());
+  if (protection.canDomainEdit()) {
+    protection.setDomainEdit(false);
+    }
+}
+
 
 function run_instant_runoff(VOTE_SHEET_NAME,bad_candidate) {
   /* Determine number of voting columns */
   var active_spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var row1_range = active_spreadsheet.getSheetByName(VOTE_SHEET_NAME).getRange("A1:1");
+  var BASE_COLUMN = how_many_candidates(VOTE_SHEET_NAME)+1;
   NUM_COLUMNS = get_num_columns_with_values(row1_range) - BASE_COLUMN + 1;
 
 
@@ -536,6 +575,7 @@ function get_num_columns_with_values(results_range) {
 
 
 function clear_background_color(VOTE_SHEET_NAME) {
+  var BASE_COLUMN = how_many_candidates(VOTE_SHEET_NAME)+1;
   var results_range = get_range_with_values(VOTE_SHEET_NAME, BASE_ROW, BASE_COLUMN, NUM_COLUMNS);
   if (results_range == null) {
     return;
@@ -551,6 +591,4 @@ function clear_background_color(VOTE_SHEET_NAME) {
     }
   }
 }
-
-
 
