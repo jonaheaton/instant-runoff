@@ -27,18 +27,21 @@ _Notes about algorithm_
 * If multiple candidates tie for least votes, then all are removed.
 * It is possible that multiple candidates tie for first place, in which case the vote ends in a tie.
 
-# Links to Examples
+# Examples
 * [Example Spreadsheet](https://docs.google.com/spreadsheets/d/11bM4oySuRGeLi5jdxZ4p3awOjMDp4-6D2dvRzGrEGhE/edit?usp=sharing)
 * [Example Form](https://forms.gle/ReTizBmeJ8ngrGpK8)
 
-# Example Google Question Format 
+**Example Google Question Format** 
 ![Example Form Screenshot](ExampleGoogleFormQuestion.png?raw=true "Example Google Question Format")
 
-# Example of Initial Response Spreadsheet
+**Example of Initial Response Spreadsheet**
 ![Example Initial Spreadsheet Screenshot](ExampleResponseSpreadSheet.png?raw=true "Initial Response Sheet")
 
-# Example of Response Spreadsheet after running script
-![Example Spreadsheet after Election Screenshot](ExampleFormattedSpreadSheet.png?raw=true "Formatted Response Sheet")
+**Example of Response Spreadsheet after Initilization**
+![Example Spreadsheet after Initilization Screenshot](ExampleFormattedSpreadSheet.png?raw=true "Formatted Response Sheet")
+
+**Example of Election Result**
+![Example Spreadsheet with Election Result Screenshot](ExampleElectionResult.png?raw=true "Election Result")
 
 # Steps to run an election
 
