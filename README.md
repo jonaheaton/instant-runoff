@@ -1,13 +1,11 @@
 # README
 
-[Instant Runoff Voting](http://github.com/cartland/instant-runoff "IRV")
+Author: Jonah Eaton
 
+based off work done by Chris Cartland in 2012-04-29 [Instant Runoff Voting](http://github.com/cartland/instant-runoff "IRV")
 
-Author: Chris Cartland
-
-Date created: 2012-04-29
-
-Last docs update: 2012-10-05
+Updated to allow for multiple, mutli-stage instant-runoff questions that work with more user-friendly google forms
+It is likely that the code for using keys in Chris Cartland's original code has been broken by my changes.  
 
 
 # What is instant-runoff voting?
@@ -58,7 +56,7 @@ Steps to run an election.
 
     * https://drive.google.com
     
-* Create questions according to instructions on GitHub -- https://github.com/cartland/instant-runoff
+* Create questions according to instructions on GitHub -- ()
 
 **Edit Form**
 
@@ -103,7 +101,7 @@ The settings in instant-runoff.gs should already match the example names in this
 
 # Settings
 
-Found in [instant-runoff.gs](https://github.com/cartland/instant-runoff/blob/master/instant-runoff.gs)
+Found in [instant-runoff.gs](need to update link
 
 * VOTE\_SHEET\_NAME must match the name of sheet containing votes. "Sheet1" will work for unmodified form sheets. The example uses "Votes".
 * BASE\_ROW defines which row to contains the first voting information. Set this to 2.
