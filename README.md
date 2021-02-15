@@ -29,11 +29,11 @@ _Notes about algorithm_
 
 # Example
 * [Example Spreadsheet](https://drive.google.com/open?id=1U-3sqm-SVf9kWd6mCaBNodlZWsQRT1o___9ZgUGPeD0)
-* [Example Form](https://docs.google.com/forms/d/1rk46UVf-6s_jmY-NVXToq4DYwy17Pwspuif9bYYTz7w/viewform?edit_requested=true)
+* [Example Form](https://forms.gle/ReTizBmeJ8ngrGpK8)
 
 ![Example Spreadsheet Screenshot](ExampleSpreadsheet.png)
 
-![Example Form Screenshot](ExampleForm.png)
+![Example Form Screenshot](Example Google Form Question.png)
 
 # Steps to run an election
 
@@ -60,22 +60,18 @@ Steps to run an election.
 
 **Edit Form**
 
-Create a title that tells voters what they are voting for.
+Create a short title that tells voters what they are voting for. Use a description for additional explanation. 
+Use the "Multiple Choice Grid" question type.
+The rows are the different options that the voter will be ranking
+The columns are the ranking numbers. Best practice is to use "1st Choice", "2nd", "3rd", etc
+Important to select the following limits:
+* "Limit to One Response per Column"
+* "Shuffle Row Order"
+Shuffling the row order will allow for unbaised selection (cite research that shows candidates at the top of a ballot get disproportionally more votes), and the limiting one response per column will make sure that the voter can only select one voter to be their second choice. In order to avoid likely bugs, best to also select the option "Require a Response in Each Row"
 
-    * Question 1 - "Secret Key", "", Text, Required
-    * Question 2 - "Choice 1", "", Text, Required
-    * Question 3 - "Choice 2", "", Text, Not Required
-    * Question 4 - "Choice 3", "", Text, Not Required
-    * Question 5 - "Choice 4", "", Text, Not Required
+You can multiple and multi-stage questions. In the example form provided, voters select which team they want to be associated with, and are presented with a ranked-choice voting question associated with that team. 
 
-Create the maximum number of choices that voters can submit.
-
-_Notes about editing questions_
-
-    * The order that you create form questions matters. Google Forms do not allow you to move around columns, so it's best just to do this right from the beginning.
-    * If you mess up it is possible to cleverly modify the questions, but it's usually time consuming and easier to start from scratch.
-    * The choices must be the last questions in the form. This also means you can ask any number of questions before IRV as long as you update the settings.
-    * None of the column names matter.
+**Add Script**
 
 * From the form spreadsheet go to "Tools" -> "Script Editor..."
 Go to the spreadsheet from the editor by clicking the dropdown "See responses" and clicking "Spreadsheet". "Tools" is on the top bar.
@@ -101,7 +97,7 @@ The settings in instant-runoff.gs should already match the example names in this
 
 # Settings
 
-Found in [instant-runoff.gs](need to update link
+Found in [instant-runoff.gs](need to update link)
 
 * VOTE\_SHEET\_NAME must match the name of sheet containing votes. "Sheet1" will work for unmodified form sheets. The example uses "Votes".
 * BASE\_ROW defines which row to contains the first voting information. Set this to 2.
