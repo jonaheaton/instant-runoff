@@ -28,10 +28,10 @@ _Notes about algorithm_
 * It is possible that multiple candidates tie for first place, in which case the vote ends in a tie.
 
 # Example
-* [Example Spreadsheet](https://drive.google.com/open?id=1U-3sqm-SVf9kWd6mCaBNodlZWsQRT1o___9ZgUGPeD0)
+* [Example Spreadsheet](https://docs.google.com/spreadsheets/d/11bM4oySuRGeLi5jdxZ4p3awOjMDp4-6D2dvRzGrEGhE/edit?usp=sharing)
 * [Example Form](https://forms.gle/ReTizBmeJ8ngrGpK8)
 
-![Example Spreadsheet Screenshot](ExampleSpreadsheet.png)
+![Example Spreadsheet Screenshot](ExampleResponseSpreadSheet.png)
 
 ![Example Form Screenshot](ExampleGoogleFormQuestion.png)
 
